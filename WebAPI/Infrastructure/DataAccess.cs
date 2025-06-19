@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using WebAPI.Models;
 
 namespace WebAPI.Infrastructure
 {
@@ -34,6 +35,12 @@ namespace WebAPI.Infrastructure
             var result = connection.Execute(sql, new { email = email, password = password, role = role });
 
             return result > 0;
+        }
+
+        public UserAccount? FindUserByEmail(string email)
+        {
+            var sql = "select * from [USERACCOUNT] where [Email]=@email";
+            return connection.QueryFirstOrDefault<UserAccount>(sql, new { email = email });
         }
     }
 }

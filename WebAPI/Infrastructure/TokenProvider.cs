@@ -18,7 +18,22 @@ namespace WebAPI.Infrastructure
         public Token GenerateToken(UserAccount userAccount)
         {
             var accessToken = GenerateAccessToken(userAccount);
-            return new Token { AccessToken = accessToken };
+            var refreshToken = GenerateRefreshToken();
+
+            return new Token { AccessToken = accessToken, RefreshToken = refreshToken };
+        }
+
+        private RefreshToken GenerateRefreshToken()
+        {
+            var refreshToken = new RefreshToken
+            {
+                Token = Guid.NewGuid().ToString(),
+                Expires = DateTime.Now.AddMonths(1),
+                CreatedDate = DateTime.Now,
+                Enabled = true
+            };
+
+            return refreshToken;
         }
 
         private string GenerateAccessToken(UserAccount userAccount)
@@ -46,7 +61,6 @@ namespace WebAPI.Infrastructure
     public class Token
     {
         public string AccessToken { get; set; }
-
-        //Refersh
+        public RefreshToken RefreshToken { get; set; }
     }
 }

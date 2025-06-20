@@ -55,10 +55,57 @@ namespace WebAPI.Controllers
             response.AccessToken = token.AccessToken;
 
             //Generate Refresh token
+            response.RefreshToken = token.RefreshToken.Token;
 
+            dataAccess.DisableUserTokenByEmail(request.Email);
+            dataAccess.InsertRefreshToken(token.RefreshToken, request.Email);
 
+            return Ok(response);
+        }
 
-            return response;
+        [HttpPost("refresh")]
+        public ActionResult<AuthResponse> RefreshToken()
+        {
+            AuthResponse response = new AuthResponse();
+
+            var refreshToken = Request.Cookies["refreshtoken"];
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return BadRequest();
+            }
+
+            var isValid = dataAccess.IsRefreshTokenValid(refreshToken);
+            if (!isValid)
+            {
+                return BadRequest();
+            }
+
+            var currentUser = dataAccess.FindUserByToken(refreshToken);
+            if (currentUser == null)
+            {
+                return BadRequest();
+            }
+
+            //Generate Access token
+            var token = tokenProvider.GenerateToken(currentUser);
+            response.AccessToken = token.AccessToken;
+            response.RefreshToken = token.RefreshToken.Token;
+
+            dataAccess.DisableUserToken(refreshToken);
+            dataAccess.InsertRefreshToken(token.RefreshToken, currentUser.Email);
+            return Ok(response);
+        }
+
+        [HttpPost("logout")]
+        public ActionResult Logout()
+        {
+            var refreshToken = Request.Cookies["refreshtoken"];
+            if (refreshToken != null)
+            {
+                dataAccess.DisableUserToken(refreshToken);
+            }
+
+            return Ok();
         }
     }
 }

@@ -1,0 +1,134 @@
+﻿@page "/login"
+@layout EmptyLayout
+
+@rendermode InteractiveServer
+
+@inject AuthService AuthService
+@inject NavigationManager nav
+
+<style>
+    body {
+        background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+        height: 100vh; /* Full height */
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically */
+    }
+
+    .login-container {
+        width: 500px;
+        margin: auto; /* Center the container */
+        padding: 30px;
+        border-radius: 5px;
+        position: absolute; /* Allow centering with transform */
+        top: 50%; /* Move down 50% */
+        left: 50%; /* Move right 50% */
+        transform: translate(-50%, -50%); /* Adjust position to center */
+    }
+
+    .form-signin {
+        max-width: 330px;
+        padding: 15px;
+        margin: 0 auto;
+    }
+
+        .form-signin .form-signin-heading, .form-signin .checkbox {
+            margin-bottom: 10px;
+        }
+
+        .form-signin .checkbox {
+            font-weight: normal;
+        }
+
+        .form-signin .form-control {
+            position: relative;
+            font-size: 16px;
+            height: auto;
+            padding: 10px;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+            .form-signin .form-control:focus {
+                z-index: 2;
+            }
+
+        .form-signin input[type="text"] {
+            margin-bottom: -1px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .form-signin input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
+    .account-wall {
+        margin-top: 20px;
+        padding: 40px 0px 20px 0px;
+        background-color: #f7f7f7;
+        -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .login-title {
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        display: block;
+    }
+
+    .profile-img {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 10px;
+        display: block;
+        -moz-border-radius: 50%;
+        -webkit-border-radius: 50%;
+        border-radius: 50%;
+    }
+
+    .need-help {
+        margin-top: 10px;
+    }
+
+    .new-account {
+        display: block;
+        margin-top: 10px;
+    }
+</style>
+
+<div class="container">
+    <div class="login-container">
+        <h1 class="text-center login-title">Sign in to continue</h1>
+        <div class="account-wall">
+            <img class="profile-img" src="https://lh5.googleusercontent.com/-b0-k99FZlyE/AAAAAAAAAAI/AAAAAAAAAAA/eu7opA4byxI/photo.jpg?sz=120"
+                 alt="">
+            <div class="form-signin">
+                <input type="text" @bind-value="Email" class="form-control" placeholder="Email" required autofocus>
+                <input type="password" @bind-value="Password" class="form-control" placeholder="Password" required>
+                <button class="btn btn-lg btn-primary btn-block w-100" @onclick="OnLogin">
+                    Sign in
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public string Email { get; set; }
+    public string Password { get; set; }
+
+    private async Task OnLogin()
+    {
+        var status = await AuthService.Login(Email, Password);
+        if (status)
+        {
+            nav.NavigateTo("/");
+        }
+    }
+}

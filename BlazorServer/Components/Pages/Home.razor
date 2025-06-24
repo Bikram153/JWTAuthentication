@@ -1,0 +1,132 @@
+@page "/"
+@using BlazorServer.Security
+@using System.Security.Claims
+@using Microsoft.IdentityModel.JsonWebTokens
+
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@inject JWTAuthenticationStateProvider AuthStateProvider
+@inject AccessTokenService AccessTokenService
+@inject AuthService AuthService
+@inject ResourceService ResourceService
+
+<PageTitle>Home</PageTitle>
+
+<style>
+	table {
+		width: 100%;
+		max-width: 100%; /* Ensure it doesn't exceed the container */
+		table-layout: fixed; /* Enforces fixed column widths */
+		border-collapse: collapse;
+	}
+
+	td {
+		padding: 8px;
+		border: 1px solid #ddd;
+		word-wrap: break-word; /* Breaks long words */
+		overflow-wrap: break-word;
+	}
+</style>
+
+<AuthorizeView>
+	<h1>You are authorize! <button class="btn btn-primary" @onclick="Logout">Logout</button></h1>
+	<hr />
+
+	<h3>User Information:</h3>
+
+	<table>
+		<tr>
+			<td style="width:200px">Email</td>
+			<td>@Email</td>
+		</tr>
+		<tr>
+			<td>Role</td>
+			<td>@Role</td>
+		</tr>
+		<tr>
+			<td>Access Token</td>
+			<td class="td-value">@Token</td>
+		</tr>
+		<tr>
+			<td>Date Time Expired</td>
+			<td>@TokenExpired</td>
+		</tr>
+		<tr>
+			<td>Date Time Now</td>
+			<td>@currentTime</td>
+		</tr>
+	</table>
+</AuthorizeView>
+
+<button class="btn btn-success mt-2" @onclick="VerifyGetRequest">Verify</button>
+<h1 class="text-success mt-2">
+
+	@if (IsVerified == true)
+	{
+		<span>Success!</span>
+	}
+	else if (IsVerified == false)
+	{
+		<span>Failed!</span>
+	}
+
+</h1>
+
+@code {
+	public string Email { get; set; }
+	public string Role { get; set; }
+	public string Token { get; set; }
+	public DateTime TokenExpired { get; set; }
+	public DateTime currentTime { get; set; }
+	public bool IsVerified { get; set; }
+
+	private Timer timer;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await InitialValues();
+
+		// Create and start the timer
+		timer = new Timer(UpdateClock, null, 0, 1000);
+	}
+
+	private async Task InitialValues()
+	{
+		var state = await AuthStateProvider.GetAuthenticationStateAsync();
+		var user = state.User;
+		if (user.Identity.IsAuthenticated)
+		{
+			Token = await AccessTokenService.GetToken();
+			Email = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+			Role = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value;
+
+			var expires = user.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value;
+			if(long.TryParse(expires, out var exp))
+			{
+				TokenExpired = DateTimeOffset.FromUnixTimeSeconds(exp).LocalDateTime;
+			}
+		}
+	}
+
+	private async Task Logout()
+	{
+		await AuthService.Logout();
+	}
+
+	private async Task VerifyGetRequest()
+	{
+		IsVerified = await ResourceService.Verify();
+		await InitialValues();
+	}
+
+	private void UpdateClock(object state)
+	{
+		// Update current time
+		currentTime = DateTime.Now;
+
+		// Trigger UI update
+		InvokeAsync(StateHasChanged);
+	}
+}

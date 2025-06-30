@@ -1,0 +1,7 @@
+.vs/
+/WebAPI/bin
+/WebAPI/obj
+/BlazorServer/bin
+/BlazorServer/obj
+/BlazorServer/wwwroot/lib
+

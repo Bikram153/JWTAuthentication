@@ -29,7 +29,7 @@ namespace BlazorServer.Services
             var responseMessage = await client.GetAsync(endpoint);
             if (responseMessage.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                //call refersh token
+                //call refresh token
                 var refreshTokenResult = await authService.RefreshTokenAsync();
                 if (!refreshTokenResult)
                 {

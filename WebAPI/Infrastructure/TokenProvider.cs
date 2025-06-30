@@ -48,7 +48,7 @@ namespace WebAPI.Infrastructure
                     new Claim(ClaimTypes.Email, userAccount.Email),
                     new Claim(ClaimTypes.Role, userAccount.Role)
                     ]),
-                Expires = DateTime.Now.AddMinutes(1),
+                Expires = DateTime.Now.AddSeconds(15),
                 SigningCredentials = credentials,
                 Issuer = configuration["JWT:Issuer"],
                 Audience = configuration["JWT:Audience"]
